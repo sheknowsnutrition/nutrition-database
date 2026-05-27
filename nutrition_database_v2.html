@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutrition Database — She Knows Nutrition</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&family=Nunito+Sans:wght@300;400&display=swap" rel="stylesheet">
+
+<script>
+/* ============================================================
+   ✏️  YOUR BRAND CONFIG
+   Everything visual lives here. Safe to edit anytime.
+   ============================================================ */
+const CONFIG = {
+
+  /* ── Page text ─────────────────────────────────────────── */
+  pageTitle:  "Plant-Based Nutrition Database",
+  eyebrow:    "She Knows Nutrition",
+  subtitle:   "Evidence-based nutrient data for whole and minimally processed plant foods. Values per stated serving size.",
+  brandName:  "She Knows Nutrition",
+  footerNote: "Data sources: USDA FoodData Central, product labels. Values per stated serving size. % DV based on Canadian DVs.",
+
+  /* ── Main colour palette ────────────────────────────────── */
+  colors: {
+    terracotta:      "#C07A5A",   /* buttons, highlights, accents          */
+    terracottaLight: "#d4947a",   /* button hover state                    */
+    terracottaPale:  "#f5ede8",   /* compare panel background, row hover   */
+    cream:           "#fafaf7",   /* page background                       */
+    creamDark:       "#f0ede8",   /* table header background               */
+    ink:             "#1e1a17",   /* body text, admin bar background       */
+    inkMid:          "#3a3530",   /* secondary text, numbers               */
+    inkLight:        "#9a9088",   /* labels, metadata, footer text         */
+    rule:            "#e8e4de",   /* borders and dividers                  */
+  },
+
+  /* ── Macros / Micros toggle tabs ───────────────────────── */
+  viewToggle: {
+    macroLabel:      "Macros",
+    microLabel:      "Micros",
+    activeBackground:"#7a9e6e",   /* colour of the active tab              */
+    activeText:      "#f5f2ee",   /* text colour on the active tab         */
+    inactiveText:    "#8a7a70",   /* text colour on the inactive tab       */
+    border:          "#b8c9b0",   /* border around the toggle              */
+  },
+
+  /* ── Page padding (left & right breathing room) ────────── */
+  pagePadding: "60px",              /* increase for more space, decrease for less */
+
+  /* ── Tooltip bubbles ────────────────────────────────────── */
+  tooltip: {
+    background:      "#f0e8e2",   /* bubble background                     */
+    text:            "#4a4039",   /* bubble text colour                    */
+    underline:       "#C07A5A",   /* dotted underline on values with tips  */
+  },
+
+};
+/* ============================================================
+   END OF CONFIG
+   ============================================================ */
+
+
+/* ============================================================
+   💬  NUTRITION TIPS
+   Add or edit hover tooltips for any food + nutrient combo.
+   Format: "Food name exactly as in FOODS below": { nutrient: "tip text" }
+   Nutrients you can add tips for:
+     protein, fat, sat, carb, fiber, sugar,
+     calcium, iron, mag, sel, vitc
+   ============================================================ */
+const TIPS = {
+
+  "Almonds, raw": {
+    fat:     "Mostly monounsaturated fat — the same heart-healthy type found in olive oil.",
+  },
+
+  "Brazil nuts, raw": {
+    sel:     "2 nuts can meet your entire daily selenium need. More isn't better — excess selenium is toxic.",
+  },
+
+  "Chia seeds": {
+    fat:     "About 60% of the fat in chia is ALA omega-3, a plant-based precursor to EPA and DHA.",
+  },
+
+  "Dried figs": {
+    sugar:   "Natural sugars concentrated through drying — pairs well with protein to slow absorption.",
+  },
+
+  "Flax seeds, ground": {
+    fat:     "About 57% of the fat in flax is ALA omega-3 — the richest plant source available.",
+    fiber:   "Ground flax is much more bioavailable than whole seeds — your body can't break down the hull.",
+  },
+
+  "Soy milk": {
+    protein: "Complete plant protein — contains all essential amino acids.",
+  },
+
+  "Almond milk, unsweetened": {
+    protein: "Only 1g protein per cup — very low compared to soy or cow's milk. Not a protein source.",
+    calcium: "Calcium is from fortification, not the almonds themselves. Check the label — levels vary by brand.",
+  },
+
+  "Raspberries, frozen": {
+    fiber:   "One of the highest-fibre fruits available — mostly insoluble fibre that supports gut motility.",
+  },
+
+  "Spinach, raw": {
+    iron:    "Spinach iron is non-heme and poorly absorbed — pair with vitamin C to improve uptake.",
+    calcium: "High in oxalates, which bind to calcium and reduce absorption. Not a reliable calcium source.",
+  },
+
+  "Banana": {
+    carb:    "Ripe bananas have a higher glycemic index than unripe — the starch converts to sugar as they ripen.",
+  },
+
+};
+/* ============================================================
+   END OF TIPS
+   ============================================================ */
+
+
+/* ============================================================
+   🥦  FOOD DATABASE
+   Add new foods here, or use the "+ Add food" button on the page.
+   Each food needs: category, name, emoji, color, servings array.
+   Serving fields: label, weight, kcal, protein, fat, sat, carb,
+                   fiber, sugar, calcium, pct_ca, iron, pct_fe,
+                   mag, sel, vitc
+   Use null for any value you don't have data for.
+   ============================================================ */
+const FOODS = [
+
+  /* ── NUTS, SEEDS & BUTTERS ─────────────────────────────── */
+
+  { category: "NUTS, SEEDS & BUTTERS", name: "Almonds, raw",
+    emoji: "🌰", color: "#e8d5c4",
+    servings: [
+      { label: "23 almonds", weight: "27.6 g",  kcal: 161, protein: 5.8,  fat: 13.8, sat: 1.1, carb: 6.0,  fiber: 4.6, sugar: 0.1,  calcium: 69,  pct_ca: 5,  iron: 0.9, pct_fe: 5,  mag: 69,  sel: 0.0,   vitc: 0.0  },
+      { label: "¼ cup",      weight: "36 g",    kcal: 208, protein: 7.6,  fat: 18.0, sat: 1.4, carb: 7.8,  fiber: 4.5, sugar: 1.6,  calcium: 97,  pct_ca: 10, iron: 1.3, pct_fe: 7,  mag: 97,  sel: 1.5,   vitc: 0.0  },
+    ]},
+
+  { category: "NUTS, SEEDS & BUTTERS", name: "Almond butter, raw",
+    emoji: "🥜", color: "#e8d8b0",
+    servings: [
+      { label: "1 Tbsp", weight: "16.2 g", kcal: 99,  protein: 3.4,  fat: 9.0,  sat: 0.7, carb: 3.1,  fiber: 1.7, sugar: 0.7,  calcium: 56,  pct_ca: 6,  iron: 0.6, pct_fe: 3,  mag: 45,  sel: 0.4,   vitc: 0.0  },
+      { label: "2 Tbsp", weight: "32.4 g", kcal: 198, protein: 6.8,  fat: 18.0, sat: 1.4, carb: 6.2,  fiber: 3.4, sugar: 1.4,  calcium: 112, pct_ca: 12, iron: 1.1, pct_fe: 6,  mag: 90,  sel: 0.8,   vitc: 0.0  },
+    ]},
+
+  { category: "NUTS, SEEDS & BUTTERS", name: "Brazil nuts, raw",
+    emoji: "🥜", color: "#d4e8c4",
+    servings: [
+      { label: "2 nuts", weight: "7.1 g",  kcal: 47,  protein: 1.0,  fat: 4.8,  sat: 1.1, carb: 0.8,  fiber: 0.5, sugar: 0.2,  calcium: 11,  pct_ca: 1,  iron: 0.2, pct_fe: 1,  mag: 27,  sel: 135.7, vitc: 0.1  },
+      { label: "¼ cup",  weight: "35 g",   kcal: 230, protein: 5.1,  fat: 23.3, sat: 5.3, carb: 4.3,  fiber: 2.6, sugar: 0.9,  calcium: 53,  pct_ca: 5,  iron: 0.8, pct_fe: 4,  mag: 131, sel: 668.6, vitc: 0.4  },
+    ]},
+
+  { category: "NUTS, SEEDS & BUTTERS", name: "Chia seeds",
+    emoji: "🫘", color: "#c4cfe8",
+    servings: [
+      { label: "1 Tbsp", weight: "10.8 g", kcal: 52,  protein: 1.8,  fat: 3.3,  sat: 0.4, carb: 4.6,  fiber: 3.7, sugar: 0.0,  calcium: 68,  pct_ca: 7,  iron: 0.8, pct_fe: 5,  mag: 36,  sel: 6.0,   vitc: 0.2  },
+      { label: "2 Tbsp", weight: "21.6 g", kcal: 104, protein: 3.6,  fat: 6.6,  sat: 0.7, carb: 9.1,  fiber: 7.4, sugar: 0.0,  calcium: 136, pct_ca: 14, iron: 1.7, pct_fe: 9,  mag: 72,  sel: 11.9,  vitc: 0.3  },
+    ]},
+
+  { category: "NUTS, SEEDS & BUTTERS", name: "Dried figs",
+    emoji: "🍂", color: "#e8c4b0",
+    servings: [
+      { label: "3 figs", weight: "25.2 g", kcal: 63,  protein: 0.8,  fat: 0.2,  sat: 0.0, carb: 16.1, fiber: 2.5, sugar: 12.1, calcium: 41,  pct_ca: 4,  iron: 0.5, pct_fe: 3,  mag: 17,  sel: 0.2,   vitc: 0.3  },
+      { label: "¼ cup",  weight: "37.5 g", kcal: 93,  protein: 1.1,  fat: 0.4,  sat: 0.1, carb: 24.0, fiber: 3.6, sugar: 18.0, calcium: 61,  pct_ca: 6,  iron: 0.8, pct_fe: 4,  mag: 25,  sel: 0.3,   vitc: 0.4  },
+    ]},
+
+  { category: "NUTS, SEEDS & BUTTERS", name: "Flax seeds, ground",
+    emoji: "🌾", color: "#e0d4b8",
+    servings: [
+      { label: "1 Tbsp", weight: "7.5 g",  kcal: 37,  protein: 1.3,  fat: 2.9,  sat: 0.3, carb: 2.0,  fiber: 1.9, sugar: 0.1,  calcium: 18,  pct_ca: 2,  iron: 0.6, pct_fe: 3,  mag: 27,  sel: 2.0,   vitc: 0.1  },
+      { label: "2 Tbsp", weight: "15 g",   kcal: 74,  protein: 2.6,  fat: 5.9,  sat: 0.5, carb: 4.0,  fiber: 3.8, sugar: 0.2,  calcium: 36,  pct_ca: 4,  iron: 1.2, pct_fe: 7,  mag: 55,  sel: 4.0,   vitc: 0.1  },
+    ]},
+
+  /* ── PLANT MILKS ────────────────────────────────────────── */
+
+  { category: "PLANT MILKS", name: "Soy milk",
+    emoji: "🥛", color: "#e8e8e0",
+    servings: [
+      { label: "1 cup",  weight: "250 mL", kcal: 130, protein: 13.0, fat: 6.0,  sat: 1.0, carb: 5.0,  fiber: 1.0, sugar: 2.0,  calcium: 50,  pct_ca: 5,  iron: 2.0, pct_fe: 11, mag: null, sel: null,  vitc: null },
+      { label: "2 cups", weight: "500 mL", kcal: 260, protein: 26.0, fat: 12.0, sat: 2.0, carb: 10.0, fiber: 2.0, sugar: 4.0,  calcium: 100, pct_ca: 10, iron: 4.0, pct_fe: 22, mag: null, sel: null,  vitc: null },
+    ]},
+
+  { category: "PLANT MILKS", name: "Almond milk, unsweetened",
+    emoji: "🥛", color: "#f0ece0",
+    servings: [
+      { label: "1 cup",  weight: "240 mL", kcal: 30,  protein: 1.0,  fat: 2.5,  sat: 0.0, carb: 1.0,  fiber: 1.0, sugar: 0.0,  calcium: 450, pct_ca: 45, iron: 0.7, pct_fe: 4,  mag: 14,  sel: 0.2,   vitc: 0.0  },
+      { label: "2 cups", weight: "480 mL", kcal: 60,  protein: 2.0,  fat: 5.0,  sat: 0.0, carb: 2.0,  fiber: 2.0, sugar: 0.0,  calcium: 900, pct_ca: 90, iron: 1.4, pct_fe: 8,  mag: 28,  sel: 0.4,   vitc: 0.0  },
+    ]},
+
+  /* ── FRUITS & VEGETABLES ────────────────────────────────── */
+
+  { category: "FRUITS & VEGETABLES", name: "Strawberries, frozen",
+    emoji: "🍓", color: "#f5d8d8",
+    servings: [
+      { label: "1 cup",  weight: "157.4 g", kcal: 55,  protein: 0.7,  fat: 0.2,  sat: 0.0, carb: 14.4, fiber: 2.5, sugar: 7.2,  calcium: 25,  pct_ca: 3,  iron: 1.2, pct_fe: 7,  mag: 17,  sel: 1.1,   vitc: 64.8 },
+      { label: "2 cups", weight: "314.8 g", kcal: 110, protein: 1.4,  fat: 0.3,  sat: 0.0, carb: 28.8, fiber: 5.0, sugar: 14.4, calcium: 50,  pct_ca: 6,  iron: 2.4, pct_fe: 13, mag: 34,  sel: 2.2,   vitc: 129.6},
+    ]},
+
+  { category: "FRUITS & VEGETABLES", name: "Raspberries, frozen",
+    emoji: "🍇", color: "#e8d0e8",
+    servings: [
+      { label: "1 cup",  weight: "140 g",   kcal: 70,  protein: 2.0,  fat: 1.0,  sat: 0.0, carb: 17.0, fiber: 9.0, sugar: 6.0,  calcium: 40,  pct_ca: 4,  iron: 1.0, pct_fe: 6,  mag: 22,  sel: 0.3,   vitc: 37.0 },
+      { label: "2 cups", weight: "280 g",   kcal: 140, protein: 4.0,  fat: 2.0,  sat: 0.0, carb: 34.0, fiber: 18.0,sugar: 12.0, calcium: 80,  pct_ca: 8,  iron: 2.0, pct_fe: 11, mag: 44,  sel: 0.6,   vitc: 74.0 },
+    ]},
+
+  { category: "FRUITS & VEGETABLES", name: "Spinach, raw",
+    emoji: "🥬", color: "#c8e8c4",
+    servings: [
+      { label: "1 cup",  weight: "30 g",    kcal: 7,   protein: 0.9,  fat: 0.1,  sat: 0.0, carb: 1.1,  fiber: 0.7, sugar: 0.1,  calcium: 30,  pct_ca: 3,  iron: 0.8, pct_fe: 4,  mag: 24,  sel: 0.3,   vitc: 8.4  },
+      { label: "2 cups", weight: "60 g",    kcal: 14,  protein: 1.8,  fat: 0.2,  sat: 0.0, carb: 2.2,  fiber: 1.4, sugar: 0.2,  calcium: 60,  pct_ca: 6,  iron: 1.6, pct_fe: 9,  mag: 48,  sel: 0.6,   vitc: 16.8 },
+    ]},
+
+  { category: "FRUITS & VEGETABLES", name: "Banana",
+    emoji: "🍌", color: "#f5f0c0",
+    servings: [
+      { label: "1 medium", weight: "118 g", kcal: 105, protein: 1.3,  fat: 0.4,  sat: 0.1, carb: 27.0, fiber: 3.1, sugar: 14.4, calcium: 6,   pct_ca: 1,  iron: 0.3, pct_fe: 2,  mag: 32,  sel: 1.2,   vitc: 10.3 },
+      { label: "2 medium", weight: "236 g", kcal: 210, protein: 2.6,  fat: 0.8,  sat: 0.2, carb: 54.0, fiber: 6.2, sugar: 28.8, calcium: 12,  pct_ca: 1,  iron: 0.6, pct_fe: 3,  mag: 64,  sel: 2.4,   vitc: 20.6 },
+    ]},
+
+];
+/* ============================================================
+   END OF FOOD DATABASE
+   ============================================================ */
+</script>
+
+<style>
+:root {
+  --terracotta: #C07A5A; --terracotta-light: #d4947a; --terracotta-pale: #f0ddd6;
+  --cream: #F5F0EA; --cream-dark: #ede6dc; --ink: #1e1a17; --ink-mid: #4a4039;
+  --ink-light: #8a7a70; --rule: #d5ccc4;
+  --toggle-active-bg: #7a9e6e; --toggle-active-text: #f5f2ee;
+  --toggle-inactive-text: #8a7a70; --toggle-border: #b8c9b0;
+  --tip-bg: #f0e8e2; --tip-text: #4a4039; --tip-underline: #C07A5A;
+  --page-padding: 60px;             /* controlled by CONFIG.pagePadding */
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh}
+header{padding:48px var(--page-padding) 40px;position:relative;border-bottom:3px solid var(--ink)}
+.eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--terracotta)}
+h1{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:400;line-height:1.1;color:#2d2d2d;margin-top:6px}
+.subtitle{font-size:14px;color:var(--ink-light);margin-top:4px;max-width:520px;line-height:1.6}
+.brand{position:absolute;top:48px;right:40px;font-family:'Playfair Display',serif;font-size:12px;font-style:italic;color:var(--ink-light);letter-spacing:.02em}
+
+/* ADMIN BAR */
+.admin-bar{padding:10px var(--page-padding);background:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.admin-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta-pale);opacity:.7}
+.admin-btn{padding:7px 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--terracotta);background:transparent;color:var(--terracotta);cursor:pointer;transition:all .15s}
+.admin-btn:hover,.admin-btn.primary{background:var(--terracotta);color:#fff}
+.admin-btn.primary:hover{background:var(--terracotta-light);border-color:var(--terracotta-light)}
+
+/* MANAGE PANEL */
+.manage-panel{background:var(--ink);color:var(--cream);padding:0 var(--page-padding);max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s ease}
+.manage-panel.open{max-height:9999px;padding:32px var(--page-padding) 40px}
+.mp-title{font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--cream);margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #3a3330}
+.ms-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin-bottom:14px}
+.food-list{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto}
+.food-list::-webkit-scrollbar{width:4px} .food-list::-webkit-scrollbar-thumb{background:var(--terracotta)}
+.fl-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#2a2520;border:1px solid #3a3330;transition:border-color .15s}
+.fl-row:hover{border-color:var(--terracotta)}
+.fl-name{flex:1;font-size:13px;color:var(--cream);font-weight:300}
+.fl-cat{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light)}
+.icon-btn{background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--ink-light);font-size:13px;transition:color .15s;line-height:1}
+.icon-btn:hover{color:var(--terracotta)} .icon-btn.del:hover{color:#e07070}
+.food-form{display:flex;flex-direction:column;gap:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:flex;flex-direction:column;gap:5px} .fg.full{grid-column:1/-1}
+.fl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light)}
+.fi,.fsel{background:#2a2520;border:1px solid #3a3330;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:300;padding:8px 10px;outline:none;transition:border-color .15s;border-radius:0;width:100%}
+.fi:focus,.fsel:focus{border-color:var(--terracotta)} .fi::placeholder{color:#5a5048}
+.fsel option{background:#2a2520}
+.fdivider{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--terracotta);padding:8px 0 4px;border-top:1px solid #3a3330;margin-top:4px}
+.form-actions{display:flex;gap:10px;margin-top:8px;align-items:center}
+.f-cancel{padding:8px 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid #3a3330;color:var(--ink-light);cursor:pointer;transition:all .15s}
+.f-cancel:hover{border-color:var(--ink-light);color:var(--cream)}
+.form-msg{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:#7abf6e}
+
+/* CONTROLS */
+.controls{padding:20px var(--page-padding);display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--cream)}
+.search-wrap{position:relative;flex:1;min-width:180px;max-width:300px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-light);pointer-events:none}
+input[type=search]{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--rule);border-radius:0;background:#fff;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s}
+input[type=search]:focus{border-color:var(--terracotta)} input[type=search]::placeholder{color:var(--ink-light)}
+.filter-group{display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{padding:7px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--rule);background:var(--cream);color:var(--ink-mid);cursor:pointer;transition:all .15s}
+.filter-btn:hover{border-color:var(--terracotta);color:var(--terracotta)}
+.filter-btn.active{background:var(--terracotta);border-color:var(--terracotta);color:#fff}
+.nutrient-toggle{margin-left:auto;display:flex;gap:6px;align-items:center}
+.toggle-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light)}
+.pill-toggle{display:flex;border:1px solid var(--toggle-border);overflow:hidden}
+.pill-btn{padding:6px 12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:none;background:var(--cream);color:var(--toggle-inactive-text);cursor:pointer;transition:all .15s}
+.pill-btn.active{background:var(--toggle-active-bg);color:var(--toggle-active-text)}
+.filter-bar{padding:16px var(--page-padding);border-bottom:1px solid var(--rule);background:var(--cream);display:none}
+.filter-bar.visible{display:block}
+.filter-bar-inner{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap}
+.filter-slider{display:flex;flex-direction:column;gap:5px;min-width:140px}
+.filter-slider-top{display:flex;justify-content:space-between;align-items:center}
+.filter-slider-name{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light)}
+.filter-slider-val{font-family:'Nunito Sans',sans-serif;font-size:11px;color:var(--terracotta)}
+input[type=range]{width:100%;accent-color:var(--terracotta);cursor:pointer}
+.filter-bar-actions{display:flex;align-items:flex-end;margin-left:auto}
+.reset-link{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);background:none;border:none;cursor:pointer;padding:6px 0;text-decoration:underline}
+.reset-link:hover{color:var(--terracotta)}
+.filter-toggle-btn{padding:7px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--rule);background:var(--cream);color:var(--ink-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.filter-toggle-btn:hover{border-color:var(--terracotta);color:var(--terracotta)}
+.filter-toggle-btn.active{background:var(--terracotta);border-color:var(--terracotta);color:#fff}
+
+/* TABLE */
+.table-wrap{padding:32px var(--page-padding) 40px}
+.table-scroll{overflow-x:auto;overflow-y:auto;max-height:560px;border-radius:4px}
+.results-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-light);letter-spacing:.08em;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.results-meta span{color:var(--terracotta);font-weight:500}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;min-width:700px;table-layout:fixed}
+tr.category-row td{padding:28px 0 8px;font-family:'Playfair Display',serif;font-size:11px;font-style:italic;letter-spacing:.12em;text-transform:uppercase;color:var(--terracotta);border-bottom:1px solid var(--terracotta-pale);vertical-align:bottom}
+thead th{padding:10px 10px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);border-bottom:2px solid var(--rule);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--cream-dark);z-index:15;transition:color .15s}
+thead th:hover{color:var(--terracotta)} thead th.sorted{color:var(--terracotta)}
+thead th .sort-arrow{display:inline-block;margin-left:4px;opacity:.4;font-size:9px} thead th.sorted .sort-arrow{opacity:1}
+thead th.num-col{width:72px;min-width:72px;text-align:right}
+thead th.srv-col{width:90px;min-width:90px;color:#c5b8b0!important;font-size:9px!important}
+thead th.srv-col-last{border-right:2px solid var(--rule)} thead th.cb-col{width:36px;min-width:36px;cursor:default} thead th.cb-col:hover{color:var(--ink-light)}
+tbody tr.data-row{border-bottom:1px solid var(--rule);transition:background .1s}
+tbody tr.data-row:hover{background:var(--terracotta-pale)} tbody tr.data-row.selected-row{background:#fae8e0}
+tbody tr.data-row td{padding:10px 10px;vertical-align:middle;color:var(--ink)}
+tbody tr.data-row td.serving{font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--ink-mid);white-space:nowrap}
+tbody tr.data-row td.serving-last{border-right:2px solid var(--rule)}
+tbody tr.data-row td.num{font-family:'Nunito Sans',sans-serif;font-size:13px;text-align:right;color:var(--ink-mid)}
+tbody tr.data-row td.cb-cell{width:36px;text-align:center;padding:11px 8px}
+tbody tr.data-row td.cb-cell input[type=checkbox]{accent-color:var(--terracotta);width:14px;height:14px;cursor:pointer}
+.food-emoji-circle{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;vertical-align:middle;margin-right:10px}
+.food-name-cell{display:flex;align-items:center}
+.tip-cell{position:relative;cursor:default}
+.tip-cell .tip-val{border-bottom:1.5px dotted var(--tip-underline);cursor:default}
+.tip-cell .tip-box{display:none;position:absolute;bottom:calc(100% + 8px);right:0;width:200px;background:var(--tip-bg);color:var(--tip-text);border:1px solid var(--terracotta-pale);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:300;line-height:1.5;padding:10px 12px;z-index:100;pointer-events:none}
+.tip-cell .tip-box::after{content:'';position:absolute;top:100%;right:14px;border:5px solid transparent;border-top-color:var(--tip-bg)}
+.tip-cell:hover .tip-box{display:block}
+.no-results{text-align:center;padding:60px 20px;color:var(--ink-light);font-family:'Playfair Display',serif;font-style:italic;font-size:18px}
+
+/* COMPARE */
+.compare-panel-wrap{padding:0 var(--page-padding) 48px;display:none} .compare-panel-wrap.visible{display:block}
+.compare-panel{border:1px solid var(--terracotta-pale);border-top:3px solid var(--terracotta)}
+.compare-panel-header{padding:16px 20px;background:var(--terracotta-pale);display:flex;justify-content:space-between;align-items:center}
+.compare-panel-title{font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--ink)}
+.compare-clear{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:none;border:none;color:var(--terracotta);cursor:pointer;text-decoration:underline}
+.compare-table-wrap{overflow-x:auto}
+.compare-table{width:100%;border-collapse:collapse;min-width:600px}
+.compare-table thead th{padding:12px 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);border-bottom:1px solid var(--rule);background:var(--cream);position:static;cursor:default;font-weight:500}
+.compare-table thead th:not(:first-child){text-align:center}
+.compare-table thead th .food-serving{display:block;font-style:italic;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink-light);margin-top:2px}
+.compare-table tbody td{padding:10px 16px;font-family:'Nunito Sans',sans-serif;font-size:13px;border-bottom:1px solid var(--rule);color:var(--ink-mid)}
+.compare-table tbody td:first-child{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-light)}
+.compare-table tbody td:not(:first-child){text-align:center}
+.compare-table tbody td.winner{color:var(--terracotta);font-weight:600}
+footer{padding:32px var(--page-padding);border-top:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:16px}
+.footer-note{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-light);letter-spacing:.06em}
+.footer-brand{font-family:'Playfair Display',serif;font-size:12px;font-style:italic;color:var(--ink-light)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow" id="eyebrowEl"></div>
+  <h1 id="pageTitleEl"></h1>
+  <div class="subtitle" id="subtitleEl"></div>
+  <div class="brand" id="brandEl"></div>
+</header>
+
+<div class="admin-bar">
+  <span class="admin-label">Manage database</span>
+  <div style="display:flex;gap:8px">
+    <button class="admin-btn primary" id="addFoodBtn">+ Add food</button>
+    <button class="admin-btn" id="manageFoodsBtn">Edit / remove</button>
+  </div>
+</div>
+
+<div class="manage-panel" id="managePanel">
+  <div id="formSection" style="display:none">
+    <div class="mp-title" id="formTitle">Add a new food</div>
+    <div class="food-form">
+      <div class="form-row">
+        <div class="fg"><label class="fl">Food name *</label><input class="fi" id="f-name" placeholder="e.g. Pumpkin seeds, raw"></div>
+        <div class="fg"><label class="fl">Category *</label>
+          <select class="fsel" id="f-cat">
+            <option value="">— select —</option>
+            <option>NUTS, SEEDS &amp; BUTTERS</option>
+            <option>LEGUMES &amp; SOY</option>
+            <option>GRAINS &amp; CEREALS</option>
+            <option>PLANT MILKS</option>
+            <option>FRUITS &amp; VEGETABLES</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Emoji</label><input class="fi" id="f-emoji" placeholder="🌱" maxlength="2"></div>
+        <div class="fg"><label class="fl">Dot colour (hex)</label><input class="fi" id="f-color" placeholder="#e8d5c4"></div>
+      </div>
+      <div class="fdivider">Serving 1 (required)</div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">Serving label *</label><input class="fi" id="s1-label" placeholder="e.g. 1 cup"></div>
+        <div class="fg"><label class="fl">Weight *</label><input class="fi" id="s1-weight" placeholder="e.g. 240 mL"></div>
+        <div class="fg"><label class="fl">kcal</label><input class="fi" id="s1-kcal" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">Protein (g)</label><input class="fi" id="s1-protein" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Fat (g)</label><input class="fi" id="s1-fat" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Sat. Fat (g)</label><input class="fi" id="s1-sat" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Carbs (g)</label><input class="fi" id="s1-carb" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Fibre (g)</label><input class="fi" id="s1-fiber" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Sugar (g)</label><input class="fi" id="s1-sugar" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Calcium (mg)</label><input class="fi" id="s1-calcium" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">% DV Calcium</label><input class="fi" id="s1-pct_ca" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">Iron (mg)</label><input class="fi" id="s1-iron" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">% DV Iron</label><input class="fi" id="s1-pct_fe" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">Magnesium (mg)</label><input class="fi" id="s1-mag" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Selenium (µg)</label><input class="fi" id="s1-sel" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Vitamin C (mg)</label><input class="fi" id="s1-vitc" type="number" step="0.1" placeholder="0"></div>
+      </div>
+      <div class="fdivider">Serving 2 (optional)</div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">Serving label</label><input class="fi" id="s2-label" placeholder="e.g. 2 cups"></div>
+        <div class="fg"><label class="fl">Weight</label><input class="fi" id="s2-weight" placeholder="e.g. 480 mL"></div>
+        <div class="fg"><label class="fl">kcal</label><input class="fi" id="s2-kcal" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">Protein (g)</label><input class="fi" id="s2-protein" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Fat (g)</label><input class="fi" id="s2-fat" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Sat. Fat (g)</label><input class="fi" id="s2-sat" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Carbs (g)</label><input class="fi" id="s2-carb" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Fibre (g)</label><input class="fi" id="s2-fiber" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Sugar (g)</label><input class="fi" id="s2-sugar" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Calcium (mg)</label><input class="fi" id="s2-calcium" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">% DV Calcium</label><input class="fi" id="s2-pct_ca" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">Iron (mg)</label><input class="fi" id="s2-iron" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">% DV Iron</label><input class="fi" id="s2-pct_fe" type="number" placeholder="0"></div>
+        <div class="fg"><label class="fl">Magnesium (mg)</label><input class="fi" id="s2-mag" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Selenium (µg)</label><input class="fi" id="s2-sel" type="number" step="0.1" placeholder="0"></div>
+        <div class="fg"><label class="fl">Vitamin C (mg)</label><input class="fi" id="s2-vitc" type="number" step="0.1" placeholder="0"></div>
+      </div>
+      <div class="fdivider">Nutrition tips — hover tooltips (optional)</div>
+      <div class="form-row">
+        <div class="fg full"><label class="fl">Tip for protein</label><input class="fi" id="t-protein" placeholder="e.g. Complete plant protein — contains all essential amino acids."></div>
+        <div class="fg full"><label class="fl">Tip for calcium</label><input class="fi" id="t-calcium" placeholder=""></div>
+        <div class="fg full"><label class="fl">Tip for iron</label><input class="fi" id="t-iron" placeholder=""></div>
+        <div class="fg full"><label class="fl">Tip for fat</label><input class="fi" id="t-fat" placeholder=""></div>
+        <div class="fg full"><label class="fl">Tip for fibre</label><input class="fi" id="t-fiber" placeholder=""></div>
+        <div class="fg full"><label class="fl">Tip for selenium</label><input class="fi" id="t-sel" placeholder=""></div>
+        <div class="fg full"><label class="fl">Tip for carbs</label><input class="fi" id="t-carb" placeholder=""></div>
+        <div class="fg full"><label class="fl">Tip for sugar</label><input class="fi" id="t-sugar" placeholder=""></div>
+      </div>
+      <div class="form-actions">
+        <button class="admin-btn primary" id="saveFood">Save food</button>
+        <button class="f-cancel" id="cancelForm">Cancel</button>
+        <span class="form-msg" id="formMsg"></span>
+      </div>
+    </div>
+  </div>
+  <div id="listSection" style="display:none">
+    <div class="mp-title">Edit or remove foods</div>
+    <div class="ms-title">All foods (<span id="foodCount">0</span>)</div>
+    <div class="food-list" id="foodListEl"></div>
+    <div style="margin-top:20px"><button class="f-cancel" id="closeListBtn">Close</button></div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="search" id="searchInput" placeholder="Search foods…">
+  </div>
+  <div class="filter-group" id="categoryFilters">
+    <button class="filter-btn active" data-cat="all">All</button>
+  </div>
+  <button class="filter-toggle-btn" id="filterToggleBtn">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+    Filter by nutrient
+  </button>
+  <div class="nutrient-toggle">
+    <span class="toggle-label">View</span>
+    <div class="pill-toggle">
+      <button class="pill-btn active" data-view="macro" id="macroBtn"></button>
+      <button class="pill-btn" data-view="micro" id="microBtn"></button>
+    </div>
+  </div>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <div class="filter-bar-inner">
+    <div class="filter-slider">
+      <div class="filter-slider-top"><span class="filter-slider-name">Protein (g)</span><span class="filter-slider-val" id="val-protein">0</span></div>
+      <input type="range" min="0" max="14" step="0.5" value="0" id="sl-protein">
+    </div>
+    <div class="filter-slider">
+      <div class="filter-slider-top"><span class="filter-slider-name">Fibre (g)</span><span class="filter-slider-val" id="val-fiber">0</span></div>
+      <input type="range" min="0" max="5" step="0.5" value="0" id="sl-fiber">
+    </div>
+    <div class="filter-bar-actions"><button class="reset-link" id="resetFilters">Reset</button></div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <div class="results-meta"><div id="resultsMeta"></div></div>
+  <div class="table-scroll">
+    <table id="nutritionTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+    <div class="no-results" id="noResults" style="display:none">No foods match your search.</div>
+  </div>
+</div>
+
+<div class="compare-panel-wrap" id="comparePanelWrap">
+  <div class="compare-panel">
+    <div class="compare-panel-header">
+      <div class="compare-panel-title">Comparing <span id="compareCount">0</span> foods</div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span id="compareHint" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-light)"></span>
+        <button class="compare-clear" id="compareClear">Clear comparison</button>
+      </div>
+    </div>
+    <div class="compare-table-wrap">
+      <table class="compare-table"><thead id="compareHead"></thead><tbody id="compareBody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-note" id="footerNoteEl"></div>
+  <div class="footer-brand" id="footerBrandEl"></div>
+</footer>
+
+<script>
+/* ── Apply CONFIG to CSS variables and DOM text ── */
+function applyConfig() {
+  document.title = CONFIG.pageTitle + " — " + CONFIG.brandName;
+  document.getElementById("eyebrowEl").textContent    = CONFIG.eyebrow;
+  document.getElementById("pageTitleEl").textContent  = CONFIG.pageTitle;
+  document.getElementById("subtitleEl").textContent   = CONFIG.subtitle;
+  document.getElementById("brandEl").textContent      = CONFIG.brandName;
+  document.getElementById("footerNoteEl").textContent = CONFIG.footerNote;
+  document.getElementById("footerBrandEl").textContent= CONFIG.brandName;
+  document.getElementById("macroBtn").textContent     = CONFIG.viewToggle.macroLabel;
+  document.getElementById("microBtn").textContent     = CONFIG.viewToggle.microLabel;
+  const r = document.documentElement.style, c = CONFIG.colors, t = CONFIG.viewToggle, tt = CONFIG.tooltip;
+  r.setProperty("--terracotta",            c.terracotta);
+  r.setProperty("--terracotta-light",      c.terracottaLight);
+  r.setProperty("--terracotta-pale",       c.terracottaPale);
+  r.setProperty("--cream",                 c.cream);
+  r.setProperty("--cream-dark",            c.creamDark);
+  r.setProperty("--ink",                   c.ink);
+  r.setProperty("--ink-mid",               c.inkMid);
+  r.setProperty("--ink-light",             c.inkLight);
+  r.setProperty("--rule",                  c.rule);
+  r.setProperty("--page-padding",          CONFIG.pagePadding);
+  r.setProperty("--toggle-active-bg",      t.activeBackground);
+  r.setProperty("--toggle-active-text",    t.activeText);
+  r.setProperty("--toggle-inactive-text",  t.inactiveText);
+  r.setProperty("--toggle-border",         t.border);
+  r.setProperty("--tip-bg",               tt.background);
+  r.setProperty("--tip-text",             tt.text);
+  r.setProperty("--tip-underline",        tt.underline);
+}
+
+/* ── Column definitions ── */
+const MACRO_COLS = [
+  {key:"cb",label:"",cls:"cb-cell",hcls:"cb-col",fmt:()=>""},
+  {key:"name",label:"Food",cls:"",hcls:"",fmt:v=>v},
+  {key:"serving",label:"Serving",cls:"serving",hcls:"srv-col",fmt:v=>v},
+  {key:"weight",label:"Weight",cls:"serving serving-last",hcls:"srv-col srv-col-last",fmt:v=>v},
+  {key:"kcal",label:"kcal",cls:"num",hcls:"num-col",fmt:v=>v!=null?v:"—"},
+  {key:"protein",label:"Protein",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"fat",label:"Fat",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"sat",label:"Sat. Fat",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"carb",label:"Carbs",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"fiber",label:"Fibre",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"sugar",label:"Sugar",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+];
+const MICRO_COLS = [
+  {key:"cb",label:"",cls:"cb-cell",hcls:"cb-col",fmt:()=>""},
+  {key:"name",label:"Food",cls:"",hcls:"",fmt:v=>v},
+  {key:"serving",label:"Serving",cls:"serving serving-last",hcls:"srv-col srv-col-last",fmt:v=>v},
+  {key:"calcium",label:"Calcium",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"pct_ca",label:"% DV Ca",cls:"num",hcls:"num-col",fmt:v=>v!=null?v+"%":"—"},
+  {key:"iron",label:"Iron",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"pct_fe",label:"% DV Fe",cls:"num",hcls:"num-col",fmt:v=>v!=null?v+"%":"—"},
+  {key:"mag",label:"Magnesium",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"sel",label:"Selenium",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"vitc",label:"Vitamin C",cls:"num",hcls:"num-col",fmt:v=>v!=null?v.toFixed(1):"—"},
+];
+const COMPARE_NUTRIENTS = [
+  {key:"kcal",label:"Energy (kcal)",fmt:v=>v!=null?v.toFixed(0):"—"},
+  {key:"protein",label:"Protein (g)",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"fat",label:"Fat (g)",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"carb",label:"Carbs (g)",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"fiber",label:"Fibre (g)",fmt:v=>v!=null?v.toFixed(1):"—"},
+  {key:"calcium",label:"Calcium (mg)",fmt:v=>v!=null?v.toFixed(0):"—"},
+  {key:"iron",label:"Iron (mg)",fmt:v=>v!=null?v.toFixed(1):"—"},
+];
+
+/* ── State ── */
+let currentView="macro",currentCat="all",currentSort={key:null,asc:true},searchTerm="";
+let selectedFoods=[],filterVisible=false,nutrientFilters={protein:0,fiber:0,calcium:0,iron:0};
+let selectedServings={},editingFoodIndex=null;
+const numFields=["kcal","protein","fat","sat","carb","fiber","sugar","calcium","pct_ca","iron","pct_fe","mag","sel","vitc"];
+const tipFields=["protein","calcium","iron","fat","fiber","sel","carb","sugar"];
+
+function getCols(){return currentView==="macro"?MACRO_COLS:MICRO_COLS}
+function getActiveSrv(f){return f.servings[selectedServings[f.name]??0]}
+function getFoodTips(name){return TIPS[name]||{}}
+
+/* ── Category filters ── */
+function rebuildCategoryFilters(){
+  const cats=[...new Set(FOODS.map(f=>f.category))];
+  const fg=document.getElementById("categoryFilters");
+  fg.innerHTML=`<button class="filter-btn${currentCat==="all"?" active":""}" data-cat="all">All</button>`;
+  cats.forEach(cat=>{
+    const b=document.createElement("button");
+    b.className="filter-btn"+(currentCat===cat?" active":"");
+    b.dataset.cat=cat; b.textContent=cat.split("&")[0].trim(); fg.appendChild(b);
+  });
+  fg.addEventListener("click",e=>{
+    const btn=e.target.closest(".filter-btn"); if(!btn)return;
+    fg.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active"); currentCat=btn.dataset.cat; renderAll();
+  });
+}
+
+/* ── Table render ── */
+function renderHead(){
+  const cols=getCols();
+  let cg=document.getElementById("tableColgroup");
+  if(!cg){cg=document.createElement("colgroup");cg.id="tableColgroup";document.getElementById("nutritionTable").prepend(cg);}
+  cg.innerHTML=cols.map(c=>c.key==="cb"?`<col style="width:36px">`:c.key==="name"?`<col style="width:180px">`:c.key==="serving"||c.key==="weight"?`<col style="width:90px">`:`<col style="width:72px">`).join('');
+  document.getElementById("tableHead").innerHTML=`<tr>${cols.map(c=>{
+    if(c.key==="cb")return`<th class="cb-col"></th>`;
+    const s=currentSort.key===c.key?"sorted":"";
+    return`<th data-key="${c.key}" class="${[c.hcls,s].filter(Boolean).join(' ')}">${c.label}<span class="sort-arrow">${currentSort.key===c.key?(currentSort.asc?"↑":"↓"):"↕"}</span></th>`;
+  }).join('')}</tr>`;
+  document.querySelectorAll("thead th[data-key]").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const k=th.dataset.key,isText=["name","serving","weight"].includes(k);
+      currentSort={key:k,asc:currentSort.key===k?!currentSort.asc:isText};renderAll();
+    });
+  });
+}
+
+function renderBody(){
+  const cols=getCols();
+  let data=FOODS.filter(f=>{
+    const srv=getActiveSrv(f);
+    return (currentCat==="all"||f.category===currentCat)&&
+      (!searchTerm||f.name.toLowerCase().includes(searchTerm))&&
+      (srv.protein??0)>=nutrientFilters.protein&&(srv.fiber??0)>=nutrientFilters.fiber&&
+      (srv.calcium??0)>=nutrientFilters.calcium&&(srv.iron??0)>=nutrientFilters.iron;
+  });
+  if(currentSort.key&&!["serving","weight"].includes(currentSort.key)){
+    data=[...data].sort((a,b)=>{
+      const sa=getActiveSrv(a),sb=getActiveSrv(b);
+      let va=currentSort.key==="name"?a.name:sa[currentSort.key];
+      let vb=currentSort.key==="name"?b.name:sb[currentSort.key];
+      if(typeof va==="string")va=va.toLowerCase();if(typeof vb==="string")vb=vb.toLowerCase();
+      if(va==null)return 1;if(vb==null)return -1;
+      return currentSort.asc?(va>vb?1:va<vb?-1:0):(va<vb?1:va>vb?-1:0);
+    });
+  }
+  document.getElementById("resultsMeta").innerHTML=`Showing <span>${data.length}</span> of ${FOODS.length} foods`;
+  if(!data.length){document.getElementById("tableBody").innerHTML="";document.getElementById("noResults").style.display="block";return;}
+  document.getElementById("noResults").style.display="none";
+  const grouped={};data.forEach(f=>{if(!grouped[f.category])grouped[f.category]=[];grouped[f.category].push(f);});
+  let html="";
+  Object.entries(grouped).forEach(([cat,rows])=>{
+    if(currentCat==="all")html+=`<tr class="category-row"><td colspan="${cols.length}">${cat}</td></tr>`;
+    rows.forEach(f=>{
+      const srv=getActiveSrv(f),tips=getFoodTips(f.name);
+      const isSel=selectedFoods.includes(f.name),isDis=!isSel&&selectedFoods.length>=3;
+      const hasM=f.servings.length>1,ai=selectedServings[f.name]??0;
+      html+=`<tr class="data-row${isSel?" selected-row":""}">${cols.map(c=>{
+        if(c.key==="cb")return`<td class="cb-cell"><input type="checkbox" data-food="${f.name}" ${isSel?"checked":""} ${isDis?"disabled":""}></td>`;
+        if(c.key==="serving"){
+          if(hasM){const opts=f.servings.map((s,i)=>`<option value="${i}" ${i===ai?"selected":""}>${s.label}</option>`).join('');
+            return`<td class="${c.cls}"><select class="srv-switcher" data-food="${f.name}" style="font-family:'Nunito Sans',sans-serif;font-size:12px;color:var(--ink-mid);background:transparent;border:.5px solid var(--rule);border-radius:3px;padding:2px 6px;cursor:pointer;outline:none;max-width:110px">${opts}</select></td>`;}
+          return`<td class="${c.cls}">${srv.label}</td>`;}
+        if(c.key==="weight")return`<td class="${c.cls}">${srv.weight}</td>`;
+        if(c.key==="name")return`<td class="${c.cls}"><div class="food-name-cell"><span class="food-emoji-circle" style="background:${f.color}">${f.emoji}</span>${f.name}</div></td>`;
+        const tip=tips[c.key],val=c.fmt(srv[c.key]);
+        if(tip)return`<td class="${c.cls} tip-cell"><span class="tip-val">${val}</span><div class="tip-box">${tip}</div></td>`;
+        return`<td class="${c.cls}">${val}</td>`;
+      }).join('')}</tr>`;
+    });
+  });
+  document.getElementById("tableBody").innerHTML=html;
+  document.querySelectorAll(".srv-switcher").forEach(sel=>{
+    sel.addEventListener("change",e=>{selectedServings[e.target.dataset.food]=parseInt(e.target.value);renderAll();renderCompare();});
+  });
+  document.querySelectorAll("tbody input[type=checkbox]").forEach(cb=>{
+    cb.addEventListener("change",e=>{
+      const n=e.target.dataset.food;
+      if(e.target.checked){if(selectedFoods.length<3)selectedFoods.push(n);}
+      else{selectedFoods=selectedFoods.filter(x=>x!==n);}
+      renderAll();renderCompare();
+    });
+  });
+}
+
+function renderCompare(){
+  const wrap=document.getElementById("comparePanelWrap"),hint=document.getElementById("compareHint"),cb=document.getElementById("compareClear");
+  if(!selectedFoods.length){wrap.classList.remove("visible");return;}
+  wrap.classList.add("visible");
+  if(selectedFoods.length===1){hint.textContent="Select 1 more to compare";cb.style.display="none";
+    document.getElementById("compareHead").innerHTML="";document.getElementById("compareBody").innerHTML="";
+    document.getElementById("compareCount").textContent="1";return;}
+  hint.textContent="";cb.style.display="inline";
+  const foods=FOODS.filter(f=>selectedFoods.includes(f.name)).map(f=>({...getActiveSrv(f),name:f.name,serving:getActiveSrv(f).label}));
+  document.getElementById("compareCount").textContent=foods.length;
+  document.getElementById("compareHead").innerHTML=`<tr><th>Nutrient</th>${foods.map(f=>`<th>${f.name}<span class="food-serving">${f.serving}</span></th>`).join('')}</tr>`;
+  let rows="";
+  COMPARE_NUTRIENTS.forEach(n=>{
+    const vals=foods.map(f=>f[n.key]),numVals=vals.filter(v=>v!=null),max=numVals.length?Math.max(...numVals):null;
+    rows+=`<tr><td>${n.label}</td>${foods.map(f=>{const v=f[n.key],w=v!=null&&v===max&&numVals.length>1;return`<td class="${w?"winner":""}">${n.fmt(v)}</td>`;}).join('')}</tr>`;
+  });
+  document.getElementById("compareBody").innerHTML=rows;
+  wrap.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function renderAll(){renderHead();renderBody();rebuildCategoryFilters();}
+
+/* ── Manage panel ── */
+function openPanel(s){
+  document.getElementById("managePanel").classList.add("open");
+  document.getElementById("formSection").style.display=s==="form"?"block":"none";
+  document.getElementById("listSection").style.display=s==="list"?"block":"none";
+}
+function closePanel(){
+  document.getElementById("managePanel").classList.remove("open");
+  document.getElementById("formSection").style.display="none";
+  document.getElementById("listSection").style.display="none";
+  editingFoodIndex=null;
+}
+function clearForm(){
+  ["name","cat","emoji","color"].forEach(id=>{const el=document.getElementById("f-"+id);if(el)el.value="";});
+  ["s1","s2"].forEach(p=>{document.getElementById(p+"-label").value="";document.getElementById(p+"-weight").value="";numFields.forEach(k=>{document.getElementById(p+"-"+k).value="";});});
+  tipFields.forEach(k=>{document.getElementById("t-"+k).value="";});
+  document.getElementById("formMsg").textContent="";editingFoodIndex=null;
+}
+function populateForm(f){
+  document.getElementById("f-name").value=f.name;document.getElementById("f-cat").value=f.category;
+  document.getElementById("f-emoji").value=f.emoji||"";document.getElementById("f-color").value=f.color||"";
+  const s1=f.servings[0]||{};document.getElementById("s1-label").value=s1.label||"";document.getElementById("s1-weight").value=s1.weight||"";
+  numFields.forEach(k=>{document.getElementById("s1-"+k).value=s1[k]!=null?s1[k]:"";});
+  const s2=f.servings[1]||{};document.getElementById("s2-label").value=s2.label||"";document.getElementById("s2-weight").value=s2.weight||"";
+  numFields.forEach(k=>{document.getElementById("s2-"+k).value=s2[k]!=null?s2[k]:"";});
+  const tips=getFoodTips(f.name);
+  tipFields.forEach(k=>{document.getElementById("t-"+k).value=tips[k]||"";});
+}
+function getNum(id){const v=document.getElementById(id).value.trim();return v===""?null:parseFloat(v);}
+
+function saveFood(){
+  const name=document.getElementById("f-name").value.trim(),cat=document.getElementById("f-cat").value;
+  const s1l=document.getElementById("s1-label").value.trim(),s1w=document.getElementById("s1-weight").value.trim();
+  const msg=document.getElementById("formMsg");
+  if(!name||!cat||!s1l||!s1w){msg.textContent="Fill in required fields (*)";msg.style.color="#e07070";return;}
+  const s1={label:s1l,weight:s1w};numFields.forEach(k=>{s1[k]=getNum("s1-"+k);});
+  const servings=[s1];
+  const s2l=document.getElementById("s2-label").value.trim();
+  if(s2l){const s2={label:s2l,weight:document.getElementById("s2-weight").value.trim()};numFields.forEach(k=>{s2[k]=getNum("s2-"+k);});servings.push(s2);}
+  const tips={};tipFields.forEach(k=>{const v=document.getElementById("t-"+k).value.trim();if(v)tips[k]=v;});
+  if(Object.keys(tips).length)TIPS[name]=tips; else delete TIPS[name];
+  const food={category:cat,name,emoji:document.getElementById("f-emoji").value.trim()||"🌱",
+    color:document.getElementById("f-color").value.trim()||"#e0d8d0",servings};
+  if(editingFoodIndex!==null)FOODS[editingFoodIndex]=food; else FOODS.push(food);
+  msg.textContent=editingFoodIndex!==null?"Food updated ✓":"Food added ✓";msg.style.color="#7abf6e";
+  renderAll();setTimeout(()=>{closePanel();clearForm();},900);
+}
+
+function renderFoodList(){
+  const list=document.getElementById("foodListEl");
+  document.getElementById("foodCount").textContent=FOODS.length;
+  list.innerHTML=FOODS.map((f,i)=>`
+    <div class="fl-row">
+      <span style="font-size:18px">${f.emoji}</span>
+      <span class="fl-name">${f.name}</span>
+      <span class="fl-cat">${f.category.split("&")[0].trim()}</span>
+      <button class="icon-btn" title="Edit" data-edit="${i}">✏️</button>
+      <button class="icon-btn del" title="Delete" data-del="${i}">✕</button>
+    </div>`).join('');
+  list.querySelectorAll("[data-edit]").forEach(btn=>{
+    btn.addEventListener("click",()=>{editingFoodIndex=parseInt(btn.dataset.edit);document.getElementById("formTitle").textContent="Edit food";clearForm();populateForm(FOODS[editingFoodIndex]);openPanel("form");});
+  });
+  list.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click",()=>{const i=parseInt(btn.dataset.del);if(confirm(`Remove "${FOODS[i].name}"?`)){FOODS.splice(i,1);renderAll();renderFoodList();}});
+  });
+}
+
+document.getElementById("addFoodBtn").addEventListener("click",()=>{clearForm();editingFoodIndex=null;document.getElementById("formTitle").textContent="Add a new food";openPanel("form");});
+document.getElementById("manageFoodsBtn").addEventListener("click",()=>{renderFoodList();openPanel("list");});
+document.getElementById("saveFood").addEventListener("click",saveFood);
+document.getElementById("cancelForm").addEventListener("click",()=>{closePanel();clearForm();});
+document.getElementById("closeListBtn").addEventListener("click",closePanel);
+document.getElementById("searchInput").addEventListener("input",e=>{searchTerm=e.target.value.toLowerCase().trim();renderAll();});
+document.querySelectorAll(".pill-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{document.querySelectorAll(".pill-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");currentView=btn.dataset.view;currentSort={key:null,asc:true};renderAll();});
+});
+document.getElementById("filterToggleBtn").addEventListener("click",()=>{
+  filterVisible=!filterVisible;
+  document.getElementById("filterBar").classList.toggle("visible",filterVisible);
+  document.getElementById("filterToggleBtn").classList.toggle("active",filterVisible);
+});
+[{id:"sl-protein",valId:"val-protein",key:"protein",unit:"g"},{id:"sl-fiber",valId:"val-fiber",key:"fiber",unit:"g"}].forEach(s=>{
+  const el=document.getElementById(s.id),ve=document.getElementById(s.valId);
+  el.addEventListener("input",()=>{const v=parseFloat(el.value);ve.textContent=v.toFixed(1)+" "+s.unit;nutrientFilters[s.key]=v;renderAll();});
+});
+document.getElementById("resetFilters").addEventListener("click",()=>{
+  [{id:"sl-protein",valId:"val-protein",key:"protein"},{id:"sl-fiber",valId:"val-fiber",key:"fiber"}].forEach(s=>{
+    document.getElementById(s.id).value=0;document.getElementById(s.valId).textContent="0";nutrientFilters[s.key]=0;
+  });renderAll();
+});
+document.getElementById("compareClear").addEventListener("click",()=>{selectedFoods=[];renderAll();renderCompare();});
+
+applyConfig();
+renderAll();
+</script>
+</body>
+</html>
